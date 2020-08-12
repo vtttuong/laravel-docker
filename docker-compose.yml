@@ -7,7 +7,7 @@ networks:
 volumes: 
     dir-site:
         driver_opts: 
-            device: /d/mycode_laravel/sites
+            device: /d/laravel-docker/sites
             type: bind
             o: bind
 
