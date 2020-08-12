@@ -3,6 +3,7 @@
 - **mysql** - `:3306`
 - **httpd** - `:9999`
 
+You must change directory in file `docker-compose.yml` to fit with your PC
 
 Running `docker-compose up -d --build php` to build environment apache-php-mysql
 
