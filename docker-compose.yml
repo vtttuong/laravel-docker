@@ -1,0 +1,95 @@
+version: "3"
+
+networks: 
+    laravel-network:
+        driver: bridge
+
+volumes: 
+    dir-site:
+        driver_opts: 
+            device: /d/mycode_laravel/sites
+            type: bind
+            o: bind
+
+services: 
+    php: 
+        container_name: php
+        build: 
+            dockerfile: Dockerfile
+            context: ./php/
+        restart: always
+        networks: 
+            - laravel-network
+        volumes: 
+            - dir-site:/home/sites/
+        depends_on: 
+            - httpd
+            - mysql
+
+    httpd:
+        container_name: httpd
+        image: "httpd:latest"
+        restart: always
+        networks: 
+            - laravel-network
+        volumes: 
+            - dir-site:/home/sites/
+            - ./httpd.conf:/usr/local/apache2/conf/httpd.conf
+        ports: 
+            - "9999:80"
+            - "443:443"
+
+    mysql:
+        container_name: mysql
+        image: "mysql:latest"
+        restart: always
+        networks: 
+            - laravel-network
+        volumes:
+            - ./db:/var/lib/mysql
+            - ./my.cnf:/etc/mysql/my.cnf
+        ports: 
+            - "3306:3306"
+        environment: 
+            - MYSQL_ROOT_PASSWORD=abc123
+            - MYSQL_DATABASE=db_site
+            - MYSQL_USER=admin
+            - MYSQL_PASSWORD=abc123
+
+    composer:
+        image: composer:latest
+        container_name: composer-product
+        volumes: 
+            - dir-site:/home/sites/
+        working_dir: /home/sites/
+        depends_on: 
+            - php
+        networks: 
+            - laravel-network
+    
+    npm:
+        image: node:latest
+        container_name: npm
+        volumes: 
+            - dir-site:/home/sites/
+        working_dir: /home/sites/
+        entrypoint: ['npm']
+        networks: 
+            - laravel-network
+    
+    artisan:
+        build: 
+            context: ./php/
+            dockerfile: Dockerfile
+        container_name: artisan
+        volumes: 
+            - dir-site:/home/sites/
+        depends_on: 
+            - mysql
+        working_dir: /home/sites/
+        entrypoint: ['php', 'home/sites/artisan']
+        networks: 
+            - laravel-network
+    
+    
+    
